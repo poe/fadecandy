@@ -25,7 +25,7 @@ public:
     {
         float distance = len(p.point);
         float wave = sinf(3.0 * distance - cycle) + noise3(p.point);
-        hsv2rgb(rgb, 0.2, 0.3, wave);
+        hsv2rgb(rgb, 0.0, 0.3, wave);
     }
 };
 

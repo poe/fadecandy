@@ -1,7 +1,7 @@
 {
   "name": "fadecandy-examples-node",
   "devDependencies": {
-    "coffee": "~0.0.1"
+    "coffee": ">1.0.0"
   },
   "dependencies": {
     "flags": "~0.1.1",
