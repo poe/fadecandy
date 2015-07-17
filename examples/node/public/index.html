@@ -10,11 +10,11 @@
 
 <head>
 
-	<meta http-equiv="content-type" content="text/html; charset=utf-8">
+	<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
 
   <script type="text/javascript" src="jquery-2.1.4.js"></script>
   <script type="text/javascript" src="spectrum.js"></script>
-  <link rel='stylesheet' href='spectrum.css' />
+  <link rel='stylesheet' href='spectrum.css'>
 
 	<title>Illumacanth LED</title>
 
@@ -27,9 +27,8 @@
   <input type='text' id="flat" />
 </form>
 
-<div id="center">
-
-</div>
+<canvas id="LED_map" width="200" height="200" style="border:1px solid #000000;">
+</canvas>
 
 <script>
 $("#flat").spectrum({
@@ -41,17 +40,36 @@ $("#flatClearable").spectrum({
     showInput: true,
     allowEmpty:true
 });
-var items = 4;
-r = 5;
-var x = 0;
-var y = 0;
-for(var i = 0; i < items; i++) {
 
-    x = x + r * Math.cos(2 * Math.PI * i / items);
-    y = y + r * Math.sin(2 * Math.PI * i / items);
-    $("#center").append("<div class='point' style='left:"+ x +"px;top:"+ y +"px'></div>");
+var c = document.getElementById("LED_map");
+var ctx = c.getContext("2d");
 
+var model = []
+var count = 24;
+var radius = 0.2;
+var index = 0;
+
+for (var i = 0; i < count; i++) {
+    var angle = i * 2 * Math.PI / count;
+    model[index++] = {
+        point: [ -radius * Math.sin(angle), 0, -radius * Math.cos(angle) ]
+    };
 }
+
+var canvas = document.getElementById('LED_map');
+var context = canvas.getContext('2d');
+var centerX = canvas.width / 2;
+var centerY = canvas.height / 2;
+var radius = 3;
+
+context.beginPath();
+context.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
+context.fillStyle = 'green';
+context.fill();
+context.lineWidth = 1;
+context.strokeStyle = '#003300';
+context.stroke();
+
 </script>
 
 </body>
