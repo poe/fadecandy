@@ -26,22 +26,24 @@
 <BR>
 <form form onsubmit="return false">
 <label for=x>X position</label>
-<input type=range min=0 max=600 value=300 id=x_position oninput="outputUpdate(value)">
+<input type=range min=0 max=600 value=300 id=x_position oninput="outputUpdate()">
 <output for=x_position id=x>300</output>
 <BR>
 <label for=y>Y position</label>
-<input type=range min=0 max=600 value=300 id=y_position oninput="outputUpdate(value)">
+<input type=range min=0 max=600 value=300 id=y_position oninput="outputUpdate()">
 <output for=y_position id=y>300</output>
 <BR>
 <label for=z>Z position</label>
-<input type=range min=0 max=600 value=300 id=z_position oninput="outputUpdate(value)">
+<input type=range min=0 max=600 value=300 id=z_position oninput="outputUpdate()">
 <output for=z_position id=z>300</output>
 <BR>
 <label for=count>Number of LEDs</label>
-<input type="radio" name="count" id=count_12 value=12>12
-<input type="radio" name="count" id=count_16 value=12>16
-<input type="radio" name="count" id=count_24 value=12>24
-<input type="radio" name="count" id=count_60 value=12>60
+<select id=count oninput="outputUpdate()">
+  <option value=12>12</option>
+  <option value=16>16</option>
+  <option value=24>24</option>
+  <option value=60>60</option>
+</select>
 <BR>
 <button id=add_ring type="button" onclick="addRing(elementList,x,y,24)">Add Ring</button>
 </form>
@@ -69,35 +71,48 @@ var context = canvas.getContext('2d');
 var x = x_position.valueAsNumber;
 var y = y_position.valueAsNumber;
 var z = z_position.valueAsNumber;
+var count = $('input[name="count"]').valueAsNumber;
 var Ring = function (x,y,z,count) {
   this.x        = x;
   this.y        = y;
   this.z        = z;
   this.count    = count;
-  switch (count){
-    case 12:
-      this.radius = 15;
-      break;
-    case 16:
-      this.radius = 19;
-      break;
-    case 24:
-      this.radius = 30;
-      break;
-    case 60:
-      this.radius = 75;
-      break;
-    default:
-      this.radius = 19;
-  }
+  this.radius = this.update_radius();
   var canvas = document.getElementById('LED_map');
   var context = canvas.getContext('2d');
   this.context  = context;
 };
 
 Ring.prototype.draw = function() {
-  drawRing(this.x,this.y,this.count,this.radius,this.context)
+  this.radius = this.update_radius();
+  drawRing(this.x,this.y,this.count,this.radius,this.context);
 };
+
+Ring.prototype.json = function() {
+  this.radius = this.update_radius();
+  return ringPointsInJSON(this.x,this.y,this.count,this.radius);
+};
+
+Ring.prototype.update_radius = function() {
+  var radius = 19;
+  switch (this.count){
+    case 12:
+      radius = 15;
+      break;
+    case 16:
+      radius = 19;
+      break;
+    case 24:
+      radius = 30;
+      break;
+    case 60:
+      radius = 75;
+      break;
+    default:
+      radius = 19;
+  }
+  return radius;
+}
 
 var z = 0;
 var ring1 = new Ring(x,y,z,12);
@@ -119,11 +134,10 @@ function addRing (elementList,x,y,count) {
 
 drawCanvas(elementList);
 
-function outputUpdate(vol) {
+function outputUpdate() {
   document.querySelector('#x').value = x_position.valueAsNumber;
   document.querySelector('#y').value = y_position.valueAsNumber;
   document.querySelector('#z').value = z_position.valueAsNumber;
-  document.querySelector('#count').value = count_position.valueAsNumber;
   drawCanvas(elementList);
 }
 
@@ -139,20 +153,12 @@ function drawCanvas(elementList){
 
   elementList[elementList.length - 1].x = centerX;
   elementList[elementList.length - 1].y = centerY;
+  elementList[elementList.length - 1].count = parseInt(document.getElementById("count").value);
 
   for(var i = 0; i < elementList.length; i++){
     elementList[i].draw();
   }
 
-}
-
-function drawLine(count,length,startx,starty, context){
-  for (var i = 0; i < count; i++) {
-    context.beginPath();
-    context.arc(startx, starty + (4 * i), 3, 0, 2 * Math.PI, false);
-    context.fillStyle = 'green';
-    context.fill();
-  }
 }
 
 function drawRing(centerX,centerY,count,ring_radius, context) {
@@ -165,7 +171,28 @@ function drawRing(centerX,centerY,count,ring_radius, context) {
   }
 }
 
+function ringPointsInJSON(centerX,centerY,count,radius){
+  var model = []
+  var index = 0;
 
+  for (var i = 0; i < count; i++) {
+      var angle = i * 2 * Math.PI / count;
+      model[index++] = {
+          point: [ -radius * Math.sin(angle), 0, -radius * Math.cos(angle) ]
+      };
+  }
+
+  return JSON.stringify(model);
+}
+
+function drawLine(startx,starty,count,length,context){
+  for (var i = 0; i < count; i++) {
+    context.beginPath();
+    context.arc(startx, starty + (4 * i), 3, 0, 2 * Math.PI, false);
+    context.fillStyle = 'green';
+    context.fill();
+  }
+}
 </script>
 
 </body>
