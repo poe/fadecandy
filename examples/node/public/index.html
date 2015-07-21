@@ -1,12 +1,6 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-
-        "http://www.w3.org/TR/html4/loose.dtd">
-
-
+<!DOCTYPE html>
 
 <html lang="en">
-
-
 
 <head>
 
@@ -29,17 +23,35 @@
   <input type='text' id="flat" />
 </form>
 
-X position <div id="x_slider" style="width:600px" ></div>
-Y position <div id="y_slider" style="width:600px" ></div>
 <BR>
+<form form onsubmit="return false">
+<label for=x>X position</label>
+<input type=range min=0 max=600 value=300 id=x_position oninput="outputUpdate(value)">
+<output for=x_position id=x>300</output>
+<BR>
+<label for=y>Y position</label>
+<input type=range min=0 max=600 value=300 id=y_position oninput="outputUpdate(value)">
+<output for=y_position id=y>300</output>
+<BR>
+<label for=z>Z position</label>
+<input type=range min=0 max=600 value=300 id=z_position oninput="outputUpdate(value)">
+<output for=z_position id=z>300</output>
+<BR>
+<label for=count>Number of LEDs</label>
+<input type="radio" name="count" id=count_12 value=12>12
+<input type="radio" name="count" id=count_16 value=12>16
+<input type="radio" name="count" id=count_24 value=12>24
+<input type="radio" name="count" id=count_60 value=12>60
+<BR>
+<button id=add_ring type="button" onclick="addRing(elementList,x,y,24)">Add Ring</button>
+</form>
+<BR>
+
+
 <canvas id="LED_map" width="600" height="600" style="border:1px solid #000000;">
 </canvas>
 
 <script>
-
-$( "#x_slider" ).slider();
-
-$( "#y_slider" ).slider();
 
 $("#flat").spectrum({
     flat: true,
@@ -52,31 +64,86 @@ $("#flatClearable").spectrum({
     allowEmpty:true
 });
 
-drawCanvas();
+var canvas = document.getElementById('LED_map');
+var context = canvas.getContext('2d');
+var x = x_position.valueAsNumber;
+var y = y_position.valueAsNumber;
+var z = z_position.valueAsNumber;
+var Ring = function (x,y,z,count) {
+  this.x        = x;
+  this.y        = y;
+  this.z        = z;
+  this.count    = count;
+  switch (count){
+    case 12:
+      this.radius = 15;
+      break;
+    case 16:
+      this.radius = 19;
+      break;
+    case 24:
+      this.radius = 30;
+      break;
+    case 60:
+      this.radius = 75;
+      break;
+    default:
+      this.radius = 19;
+  }
+  var canvas = document.getElementById('LED_map');
+  var context = canvas.getContext('2d');
+  this.context  = context;
+};
 
-function drawCanvas(){
+Ring.prototype.draw = function() {
+  drawRing(this.x,this.y,this.count,this.radius,this.context)
+};
+
+var z = 0;
+var ring1 = new Ring(x,y,z,12);
+var ring2 = new Ring(x,y,z,16);
+var ring3 = new Ring(x,y,z,24);
+var ring4 = new Ring(x,y,z,60);
+
+elementList = [];
+
+elementList.push(ring1);
+elementList.push(ring2);
+elementList.push(ring3);
+elementList.push(ring4);
+
+function addRing (elementList,x,y,count) {
+  ring = new Ring(x,y,z,count);
+  elementList.push(ring);
+};
+
+drawCanvas(elementList);
+
+function outputUpdate(vol) {
+  document.querySelector('#x').value = x_position.valueAsNumber;
+  document.querySelector('#y').value = y_position.valueAsNumber;
+  document.querySelector('#z').value = z_position.valueAsNumber;
+  document.querySelector('#count').value = count_position.valueAsNumber;
+  drawCanvas(elementList);
+}
+
+
+function drawCanvas(elementList){
   var c = document.getElementById("LED_map");
   var ctx = c.getContext("2d");
 
-  var model = []
-  var count = 24;
-  var radius = 0.2;
-  var index = 0;
+  var centerX = x_position.valueAsNumber;
+  var centerY = y_position.valueAsNumber;
 
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  var canvas = document.getElementById('LED_map');
-  var context = canvas.getContext('2d');
-  var centerX = canvas.width / 2;
-  var centerY = canvas.height / 2;
-  var radius = 2;
+  elementList[elementList.length - 1].x = centerX;
+  elementList[elementList.length - 1].y = centerY;
 
-  drawLine(64,100,centerX,centerY,context);
+  for(var i = 0; i < elementList.length; i++){
+    elementList[i].draw();
+  }
 
-  drawRing(centerX,centerY,24,20, context);
-
-  drawRing((canvas.width  / 2) + 40,(canvas.height / 2),12,8, context);
-
-  drawRing((canvas.width  / 2) + 40,(canvas.height / 2),60,60, context);
 }
 
 function drawLine(count,length,startx,starty, context){
@@ -97,6 +164,7 @@ function drawRing(centerX,centerY,count,ring_radius, context) {
       context.fill();
   }
 }
+
 
 </script>
 
