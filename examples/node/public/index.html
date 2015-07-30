@@ -46,6 +46,7 @@
 </select>
 <BR>
 <button id=add_ring type="button" onclick="addRing(elementList,x,y,24)">Add Ring</button>
+<button id=add_line type="button" onclick="addLine(elementList,x,y)">Add Line</button>
 </form>
 <BR>
 
@@ -71,7 +72,7 @@ var context = canvas.getContext('2d');
 var x = x_position.valueAsNumber;
 var y = y_position.valueAsNumber;
 var z = z_position.valueAsNumber;
-var count = $('input[name="count"]').valueAsNumber;
+//var count = $('input[name="count"]').valueAsNumber;
 var Ring = function (x,y,z,count) {
   this.x        = x;
   this.y        = y;
@@ -114,23 +115,37 @@ Ring.prototype.update_radius = function() {
   return radius;
 }
 
+var Line = function (x,y,z) {
+  this.x        = x;
+  this.y        = y;
+  this.z        = z;
+  this.count    = 64;
+  this.length   = 444;
+  var canvas = document.getElementById('LED_map');
+  var context = canvas.getContext('2d');
+  this.context  = context;
+}
+
+Line.prototype.draw = function() {
+  drawLine(this.x,this.y,this.count,this.length,this.context);
+}
+
 var z = 0;
 var ring1 = new Ring(x,y,z,12);
-var ring2 = new Ring(x,y,z,16);
-var ring3 = new Ring(x,y,z,24);
-var ring4 = new Ring(x,y,z,60);
 
 elementList = [];
 
 elementList.push(ring1);
-elementList.push(ring2);
-elementList.push(ring3);
-elementList.push(ring4);
 
 function addRing (elementList,x,y,count) {
   ring = new Ring(x,y,z,count);
   elementList.push(ring);
 };
+
+function addLine (elementList,x,y) {
+  line = new Line(x,y,z);
+  elementList.push(line);
+}
 
 drawCanvas(elementList);
 
@@ -159,9 +174,14 @@ function drawCanvas(elementList){
     elementList[i].draw();
   }
 
+  var length = 444;
+  var count = 64;
+
+  drawLine(centerX,centerY,count,length,context);
+
 }
 
-function drawRing(centerX,centerY,count,ring_radius, context) {
+function drawRing(centerX,centerY,count,ring_radius,context) {
   for (var i = 0; i < count; i++) {
       var angle = i * 2 * Math.PI / count;
       context.beginPath();
@@ -188,11 +208,12 @@ function ringPointsInJSON(centerX,centerY,count,radius){
 function drawLine(startx,starty,count,length,context){
   for (var i = 0; i < count; i++) {
     context.beginPath();
-    context.arc(startx, starty + (4 * i), 3, 0, 2 * Math.PI, false);
+    context.arc(startx, starty + i, 3, 0, 2 * Math.PI, false);
     context.fillStyle = 'green';
     context.fill();
   }
 }
+
 </script>
 
 </body>
