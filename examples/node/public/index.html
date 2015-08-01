@@ -37,6 +37,13 @@
 <input type=range min=0 max=600 value=300 id=z_position oninput="outputUpdate()">
 <output for=z_position id=z>300</output>
 <BR>
+
+<label for=angle>Angle of orientation</label>
+<input type=range min=0 max=360 value=0 id=orientation oninput="outputUpdate()">
+<output for=orientation id=z>0</output>
+<BR>
+
+
 <label for=count>Number of LEDs</label>
 <select id=count oninput="outputUpdate()">
   <option value=12>12</option>
@@ -45,11 +52,11 @@
   <option value=60>60</option>
 </select>
 <BR>
-<button id=add_ring type="button" onclick="addRing(elementList,x,y,24)">Add Ring</button>
+<button id=add_ring type="button" onclick="addRing(elementList)">Add Ring</button>
 <button id=add_line type="button" onclick="addLine(elementList,x,y)">Add Line</button>
 </form>
 <BR>
-
+<div id="element_list"></div>
 
 <canvas id="LED_map" width="600" height="600" style="border:1px solid #000000;">
 </canvas>
@@ -72,7 +79,6 @@ var context = canvas.getContext('2d');
 var x = x_position.valueAsNumber;
 var y = y_position.valueAsNumber;
 var z = z_position.valueAsNumber;
-//var count = $('input[name="count"]').valueAsNumber;
 var Ring = function (x,y,z,count) {
   this.x        = x;
   this.y        = y;
@@ -137,22 +143,26 @@ elementList = [];
 
 elementList.push(ring1);
 
-function addRing (elementList,x,y,count) {
+function addRing (elementList) {
+  x = x_position.valueAsNumber;
+  y = y_position.valueAsNumber;
+  var e = document.getElementById("count");
+  count = parseInt(e.options[e.selectedIndex].value);
+  var z = 0;
   ring = new Ring(x,y,z,count);
   elementList.push(ring);
+  drawCanvas(elementList);
 };
 
 function addLine (elementList,x,y) {
-  line = new Line(x,y,z);
+  line = new Line(x_position.valueAsNumber,y_position.valueAsNumber,z);
   elementList.push(line);
+  drawCanvas(elementList);
 }
 
 drawCanvas(elementList);
 
 function outputUpdate() {
-  document.querySelector('#x').value = x_position.valueAsNumber;
-  document.querySelector('#y').value = y_position.valueAsNumber;
-  document.querySelector('#z').value = z_position.valueAsNumber;
   drawCanvas(elementList);
 }
 
@@ -163,21 +173,18 @@ function drawCanvas(elementList){
 
   var centerX = x_position.valueAsNumber;
   var centerY = y_position.valueAsNumber;
+  var angle = orientation.valueAsNumber;
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  elementList[elementList.length - 1].x = centerX;
-  elementList[elementList.length - 1].y = centerY;
-  elementList[elementList.length - 1].count = parseInt(document.getElementById("count").value);
 
   for(var i = 0; i < elementList.length; i++){
     elementList[i].draw();
   }
 
-  var length = 444;
-  var count = 64;
+  var current_angle = orientation.valueAsNumber;
 
-  drawLine(centerX,centerY,count,length,context);
+  drawCross(centerX,centerY,context);
+  drawArrow(centerX,centerY - 10,current_angle,context)
 
 }
 
@@ -192,7 +199,7 @@ function drawRing(centerX,centerY,count,ring_radius,context) {
 }
 
 function ringPointsInJSON(centerX,centerY,count,radius){
-  var model = []
+  var model = [];
   var index = 0;
 
   for (var i = 0; i < count; i++) {
@@ -212,6 +219,31 @@ function drawLine(startx,starty,count,length,context){
     context.fillStyle = 'green';
     context.fill();
   }
+}
+
+function drawCross(centerx,centery,context){
+  size = 6;
+  context.beginPath();
+  context.moveTo(centerx,centery + size);
+  context.lineTo(centerx,centery - size);
+  context.moveTo(centerx + size,centery);
+  context.lineTo(centerx - size,centery);
+  context.stroke();
+}
+
+function drawArrow(x,y,orientation,context){
+  size = 10;
+  context.beginPath();
+  context.save();
+  context.translate(x,y);
+  context.rotate(orientation*Math.PI/180);
+  context.moveTo(0,0);
+  context.lineTo(0, -size);
+  context.lineTo(-size/2,-size/2);
+  context.lineTo(size/2,-size/2);
+  context.lineTo(0,-size);
+  context.restore();
+  context.stroke();
 }
 
 </script>
