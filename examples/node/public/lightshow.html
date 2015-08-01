@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+	<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+
+  <script type="text/javascript" src="jquery-2.1.4.js"></script>
+  <script type="text/javascript" src="jquery-ui.js"></script>
+  <script type="text/javascript" src="spectrum.js"></script>
+  <link rel='stylesheet' href='spectrum.css'>
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+
+	<title>Illumacanth LED</title>
+
+</head>
+
+<body>
+
+<h1> <strike>Fishbug</strike> Illumacanth LED interface </h1>
+
+<canvas id="LED_map" width="600" height="600" style="border:1px solid #000000;">
+</canvas>
+
+<script>
+
+$("#flat").spectrum({
+    flat: true,
+    showInput: true
+});
+
+$("#flatClearable").spectrum({
+    flat: true,
+    showInput: true,
+    allowEmpty:true
+});
+
+var canvas = document.getElementById('LED_map');
+var context = canvas.getContext('2d');
+
+var LED = function(x,y,z,color){
+  this.x = x;
+  this.y = y;
+  this.z = z;
+  this.color = color;
+}
+
+LED.prototype.draw = function(context){
+  context.beginPath();
+  context.arc(this.x, this.y, 3, 0, 2 * Math.PI, false);
+  context.fillStyle = this.color;
+  context.fill();
+}
+
+var LEDlist = [];
+
+for(var x = 0; x < canvas.width; x+= 10){
+  for(var y = 0; y < canvas.height; y+= 10){
+    this_led = new LED(x,y,0,randomColor());
+    LEDlist.push(this_led);
+  }
+}
+
+function drawCanvas(LEDlist){
+  for(var i = 0; i < LEDlist.length; i++){
+    LEDlist[i].draw(context);
+  }
+}
+
+function randomColor(){
+  return '#'+Math.floor(Math.random()*16777215).toString(16);
+}
+
+function colorCircle(LEDlist){
+  var x1 = 300;
+  var y1 = 500;
+
+  for(var i = 0; i < LEDlist.length; i++){
+    var led = LEDlist[i];
+    var x2 = led.x;
+    var y2 = led.y;
+    var distance = Math.sqrt( (x2-=x1)*x2 + (y2-=y1)*y2 );
+    var intensity = (distance / 600) * 256 | 0;
+    var color = "hsl(90,100%," + intensity.toString() + "%)";
+    led.color = color;
+  }
+}
+
+colorCircle(LEDlist);
+drawCanvas(LEDlist);
+
+</script>
+
+</body>
+
+</html>
+
+
