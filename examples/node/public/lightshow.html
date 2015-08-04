@@ -39,17 +39,24 @@ $("#flatClearable").spectrum({
 var canvas = document.getElementById('LED_map');
 var context = canvas.getContext('2d');
 
-var LED = function(x,y,z,color){
+var LED = function(x,y,z,hue,saturation,lightness) {
   this.x = x;
   this.y = y;
   this.z = z;
-  this.color = color;
+  this.hue = hue;
+  this.saturation = saturation;
+  this.lightness = lightness;
+  this.color();
+}
+
+LED.prototype.color = function(){
+  return "hsl(" + this.hue.toString() + "," + this.saturation.toString() + "%," + this.lightness.toString() + "%)";
 }
 
 LED.prototype.draw = function(context){
   context.beginPath();
   context.arc(this.x, this.y, 3, 0, 2 * Math.PI, false);
-  context.fillStyle = this.color;
+  context.fillStyle = this.color();
   context.fill();
 }
 
@@ -57,7 +64,7 @@ var LEDlist = [];
 
 for(var x = 0; x < canvas.width; x+= 10){
   for(var y = 0; y < canvas.height; y+= 10){
-    this_led = new LED(x,y,0,randomColor());
+    var this_led = new LED(x,y,0,0,0,0);
     LEDlist.push(this_led);
   }
 }
@@ -68,26 +75,70 @@ function drawCanvas(LEDlist){
   }
 }
 
-function randomColor(){
-  return '#'+Math.floor(Math.random()*16777215).toString(16);
-}
-
-function colorCircle(LEDlist){
-  var x1 = 300;
-  var y1 = 500;
-
+function colorCircle(x1,y1,radius,LEDlist){
   for(var i = 0; i < LEDlist.length; i++){
     var led = LEDlist[i];
     var x2 = led.x;
     var y2 = led.y;
     var distance = Math.sqrt( (x2-=x1)*x2 + (y2-=y1)*y2 );
-    var intensity = (distance / 600) * 256 | 0;
-    var color = "hsl(90,100%," + intensity.toString() + "%)";
-    led.color = color;
+    led.hue = 230;
+//    led.hue = (led.hue + (distance / radius) * 360 | 0) / 2;
+//    led.saturation += (distance / radius) * 100 | 0;
+    led.saturation = 100;
+    led.lightness = (distance / radius) * 100 | 0;
   }
 }
 
-colorCircle(LEDlist);
+function randomizeLEDColors(LEDlist){
+  for(var i = 0; i < LEDlist.length; i++){
+    led = LEDlist[i];
+    led.hue = Math.floor(Math.random()*360);
+    led.saturation = 100;
+    led.lightness = 60;
+//    led.saturation += Math.floor(Math.random()*100);
+//    led.lightness += Math.floor(Math.random()*100);
+  }
+}
+
+function setBackgroundColor(hue,saturation,lightness,LEDlist){
+  for(var i = 0; i < LEDlist.length; i++){
+    var led = LEDlist[i];
+    led.hue = hue;
+    led.saturation = saturation;
+    led.lightness = lightness;
+  }
+}
+
+
+var Circles = [];
+
+var Circle = function (x,y,radius) {
+  this.x = x;
+  this.y = y;
+  this.radius = radius;
+}
+
+
+
+var radius = 0;
+setInterval(function(){
+
+  radius+=10;
+
+  setBackgroundColor(0,0,0,LEDlist);
+
+
+//  colorCircle(600,600,radius,LEDlist);
+//  colorCircle(0,0,radius,LEDlist);
+
+  randomizeLEDColors(LEDlist);
+
+//  randomizeLEDColors(LEDlist);
+
+  drawCanvas(LEDlist);
+},1)
+
+//randomizeLEDColors(LEDlist);
 drawCanvas(LEDlist);
 
 </script>
