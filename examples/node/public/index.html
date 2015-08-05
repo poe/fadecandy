@@ -169,13 +169,13 @@ function outputUpdate() {
 
 function drawCanvas(elementList){
   var c = document.getElementById("LED_map");
-  var ctx = c.getContext("2d");
+  var context = c.getContext("2d");
 
   var centerX = x_position.valueAsNumber;
   var centerY = y_position.valueAsNumber;
   var angle = orientation.valueAsNumber;
 
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  context.clearRect(0, 0, canvas.width, canvas.height);
 
   for(var i = 0; i < elementList.length; i++){
     elementList[i].draw();
