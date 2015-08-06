@@ -70,6 +70,7 @@ var Ring = function (x,y,z,count) {
   this.y        = y;
   this.z        = z;
   this.count    = count;
+  this.shape     = "ring";
   this.radius = this.update_radius();
   var canvas = document.getElementById('LED_map');
   var context = canvas.getContext('2d');
@@ -112,6 +113,7 @@ var Line = function (x,y,z) {
   this.y        = y;
   this.z        = z;
   this.count    = 64;
+  this.shape    = "line";
   this.length   = 444;
   var canvas = document.getElementById('LED_map');
   var context = canvas.getContext('2d');
@@ -122,9 +124,41 @@ Line.prototype.draw = function() {
   drawLine(this.x,this.y,this.count,this.length,this.context);
 }
 
-var z = 0;
+Line.prototype.json = function() {
+  return linePointsInJSON(this.x,this.y,this.count,this.length);
+};
 
-LEDlist = [];
+Line.prototype.json = function() {
+  return linePointsInJSON(this.x,this.y,this.count);
+};
+
+var default_data = "";
+
+var LEDlist = [];
+
+$(document).ready(function() {
+    var jqxhr = $.getJSON( "./default_layout.json", function() {
+      })
+        .done(function() {
+        })
+        .fail(function() {
+        })
+        .always(function() {
+        });
+      jqxhr.complete(function(data) {
+        default_data = JSON.parse(data.responseText);
+        $.each(default_data, function(index,value) {
+          if(value.shape == "ring"){
+            var this_element = new Ring(value.x,value.y,value.z,value.count);
+          }else{
+            var this_element = new Line(value.x,value.y,value.z);
+          }
+          LEDlist.push(this_element);
+          });
+        drawCanvas(LEDlist);
+      });
+
+    });
 
 function addRing (LEDlist) {
   x = x_position.valueAsNumber;
@@ -143,12 +177,17 @@ function addLine (LEDlist,x,y) {
   drawCanvas(LEDlist);
 }
 
-drawCanvas(LEDlist);
-
 function outputUpdate() {
   drawCanvas(LEDlist);
 }
 
+function outputJSON() {
+  var JSON_string = "";
+  $.each(LEDlist, function(index,value) {
+    JSON_string += value.json();
+  });
+  return JSON_string;
+}
 
 function drawCanvas(LEDlist){
   var c = document.getElementById("LED_map");
@@ -202,6 +241,18 @@ function drawLine(startx,starty,count,length,context){
     context.fillStyle = 'green';
     context.fill();
   }
+}
+
+function linePointsInJSON(startx,starty,count,length){
+  var model = [];
+  var index = 0;
+
+  for (var i = 0; i < count; i++) {
+    model[index++] = {
+      point: [startx, starty + i, 0]
+    }
+  }
+  return JSON.stringify(model);
 }
 
 function drawCross(centerx,centery,context){
