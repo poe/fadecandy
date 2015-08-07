@@ -82,9 +82,9 @@ Ring.prototype.draw = function() {
   drawRing(this.x,this.y,this.count,this.radius,this.context);
 };
 
-Ring.prototype.json = function() {
+Ring.prototype.points = function() {
   this.radius = this.update_radius();
-  return ringPointsInJSON(this.x,this.y,this.count,this.radius);
+  return ringPoints(this.x,this.y,this.count,this.radius);
 };
 
 Ring.prototype.update_radius = function() {
@@ -124,12 +124,8 @@ Line.prototype.draw = function() {
   drawLine(this.x,this.y,this.count,this.length,this.context);
 }
 
-Line.prototype.json = function() {
-  return linePointsInJSON(this.x,this.y,this.count,this.length);
-};
-
-Line.prototype.json = function() {
-  return linePointsInJSON(this.x,this.y,this.count);
+Line.prototype.points = function() {
+  return linePoints(this.x,this.y,this.count,this.length);
 };
 
 var default_data = "";
@@ -182,11 +178,11 @@ function outputUpdate() {
 }
 
 function outputJSON() {
-  var JSON_string = "";
+  var JSON_strings = [];
   $.each(LEDlist, function(index,value) {
-    JSON_string += value.json();
+    JSON_strings = JSON_strings.concat(value.points());
   });
-  return JSON_string;
+  return JSON.stringify(JSON_strings);
 }
 
 function drawCanvas(LEDlist){
@@ -220,18 +216,18 @@ function drawRing(centerX,centerY,count,ring_radius,context) {
   }
 }
 
-function ringPointsInJSON(centerX,centerY,count,radius){
+function ringPoints(centerX,centerY,count,radius){
   var model = [];
   var index = 0;
 
   for (var i = 0; i < count; i++) {
       var angle = i * 2 * Math.PI / count;
       model[index++] = {
-          point: [ -radius * Math.sin(angle), 0, -radius * Math.cos(angle) ]
+          point: [ -radius * Math.sin(angle) + centerX, -radius * Math.cos(angle) + centerY, 0 ]
       };
   }
 
-  return JSON.stringify(model);
+  return model;
 }
 
 function drawLine(startx,starty,count,length,context){
@@ -243,7 +239,7 @@ function drawLine(startx,starty,count,length,context){
   }
 }
 
-function linePointsInJSON(startx,starty,count,length){
+function linePoints(startx,starty,count,length){
   var model = [];
   var index = 0;
 
@@ -252,7 +248,7 @@ function linePointsInJSON(startx,starty,count,length){
       point: [startx, starty + i, 0]
     }
   }
-  return JSON.stringify(model);
+  return model;
 }
 
 function drawCross(centerx,centery,context){
